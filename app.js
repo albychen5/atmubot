@@ -1,4 +1,5 @@
 var tmi = require('tmi.js');
+var channel = 'albychen5'
 
 var options = {
 	options: {
@@ -19,12 +20,23 @@ var client = new tmi.client(options);
 client.connect();
 
 client.on('chat', function(channel, user, message, self) {
-	if(message === "!twitter") {
-		client.action("albychen5", "twitter.com/algebraprodigy");
+	if(self) return
+
+	if(message === "-help" || message === "-h") {
+		helpActions = "-add to add a song, -currentSong for the current song, -twitter for my twitter handle";
+		client.action(channel, helpActions);
 	}
-	client.action("albychen5", "hello " + user['display-name']);
+
+	if(message.startsWith("-twitter ") ) {
+		reply = message.substring(9,message.length);
+		client.action(channel, reply);
+	}
 });
 
 client.on('connected', function(address,port) {
-	client.action("albychen5", "Hello World");
+	client.action(channel, "Welcome to Atmu! To see a list of commands, type '-help' ");
+});
+
+client.on('disconnected', function(reason) {
+	client.action(channel, "Goodbye.")
 });
