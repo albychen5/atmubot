@@ -1,14 +1,15 @@
 {
-  "name": "totalnoobbot",
-  "version": "1.0.0",
+  "name": "atmubot",
+  "version": "0.1.0",
   "description": "This is a twitchbot",
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "author": "Albert Chen",
   "license": "ISC",
   "dependencies": {
+    "spotify-web-api-node": "^2.3.6",
     "tmi.js": "^1.1.2"
   }
 }
