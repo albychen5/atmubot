@@ -38,7 +38,7 @@ client.on('chat', function(channel, user, message, self) {
 	}
 
 	// twitter command
-	if(message.startsWith("-twitter ") ) {
+	if(message.startsWith("-twitter") ) {
 		reply = message.substring(9,message.length);
 		client.action(channel, reply);
 	}

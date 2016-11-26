@@ -9,7 +9,17 @@
   "author": "Albert Chen",
   "license": "ISC",
   "dependencies": {
+    "express": "^4.14.0",
     "spotify-web-api-node": "^2.3.6",
     "tmi.js": "^1.1.2"
-  }
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/albychen5/atmubot.git"
+  },
+  "bugs": {
+    "url": "https://github.com/albychen5/atmubot/issues"
+  },
+  "homepage": "https://github.com/albychen5/atmubot#readme"
 }
