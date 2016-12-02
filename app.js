@@ -1,7 +1,9 @@
 var tmi = require('tmi.js');
 var SpotifyWebApi = require('spotify-web-api-node');
+var spotifyUser = 'albychen'; //spotify username
+var spotifyPlaylist = '5s8NXNEjuuRWXf28GcLxmG';
 
-var channel = 'albychen5' //twitch channel username
+var channel = 'albychen5'
 
 // required optons for tmi bot
 var options = {
@@ -29,7 +31,7 @@ var credentials = {
 // creating the spotify client
 var spotifyApi = new SpotifyWebApi(credentials);
 // super janky by copy pasting the spotify auth code from web-api-auth-examples
-spotifyApi.setAccessToken('BQAlJHIbt6VJW780QBrqkLOcFvJnccaasgxKGFohbkXaJd42WhWRimDf9eVGS4WkaSLi0xXC3GbMH4rbKGTwv7wiudJAfb56fvhexXeVhQaXJsV_s8tbSK2oNcWkTmW2gpotTVV3nvYdt-791lgTK101p7tY2pSi37ze3NLIX5TQQ9NiLQeoTKBFzlYA2E7OepcO8imYPv9n');
+spotifyApi.setAccessToken('BQDAo8xuPDBqUwGpC9EgatPiUDDBd-zn8eFWNYXHK5ogSiIcYofnpzZukVLoGVAhzL4rB3IYHozEEJyO44VfAiXaBaM-53mTtbqBVdmmFhTqYVDlvF66ubIfbMuUDjF8waH9UGCFuH_JWISHozX9auVP-VUEy9aOHnHTYCdZTXQ7_s4Enp7pKzTXhfJNIRNgkLw_3ryflxyi');
 
 // not sure what code this is, something in the spotify-web-api-node example code
 // var code = 'MQCbtKe23z7YzzS44KzZzZgjQa621hgSzHN';
@@ -74,6 +76,14 @@ client.on('chat', function(channel, user, message, self) {
 	{
 
 		songUri = message.substring(5, message.length);
+		spotifyApi.addTracksToPlaylist(spotifyUser, spotifyPlaylist, [songUri])
+			.then(function(data) {
+				console.log ('Added ' + songUri + ' to playlist');
+				client.action(channel, 'Added ' + songUri + ' to playlist');
+			}, function(err) {
+				console.log('Something went wrong!', err);
+				client.action(channel, 'error occured, track not added');
+			});
 
 		// add a track to the Test Playlist
 
