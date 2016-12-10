@@ -7,6 +7,8 @@ var tmi = require('tmi.js');
 
 // required module so that we don't have to write HTTP requests when talking with spotify API (it's a wrapper)
 var SpotifyWebApi = require('spotify-web-api-node');
+var spotifyUser = 'albychen'; //spotify username
+var spotifyPlaylist = '5s8NXNEjuuRWXf28GcLxmG';
 
 // twitch channel username
 var channel = 'albychen5';
@@ -92,6 +94,14 @@ client.on('chat', function(channel, user, message, self) {
 	if(message.startsWith('-add '))
 	{
 		songUri = message.substring(5, message.length);
+		spotifyApi.addTracksToPlaylist(spotifyUser, spotifyPlaylist, [songUri])
+			.then(function(data) {
+				console.log ('Added ' + songUri + ' to playlist');
+				client.action(channel, 'Added ' + songUri + ' to playlist');
+			}, function(err) {
+				console.log('Something went wrong!', err);
+				client.action(channel, 'error occured, track not added');
+			});
 
 		// add a track to the Test Playlist
 		// TODO (annie): output the song name instead of the song URI to the twitch chat/console
