@@ -7,8 +7,6 @@ var tmi = require('tmi.js');
 
 // required module so that we don't have to write HTTP requests when talking with spotify API (it's a wrapper)
 var SpotifyWebApi = require('spotify-web-api-node');
-var spotifyUser = 'albychen'; //spotify username
-var spotifyPlaylist = '5s8NXNEjuuRWXf28GcLxmG';
 
 // twitch channel username
 var channel = 'albychen5';
