@@ -1,9 +1,132 @@
 var tmi = require('tmi.js');
 var SpotifyWebApi = require('spotify-web-api-node');
-var spotifyUser = 'albychen'; //spotify username
-var spotifyPlaylist = '5s8NXNEjuuRWXf28GcLxmG';
+var spotifyUser = '1238380192'; //spotify username
+var spotifyPlaylist = '01jHwHi5D6jxefCMP1q7uy';
+var querystring = require('querystring');
+var cookieParser = require('cookie-parser');
+var request = require('request'); // "Request" library
 
-var channel = 'albychen5'
+var express = require('express');
+var app = express();
+app.use('/', express.static(__dirname + '/'));
+app.listen(5000);
+
+
+var channel = 'albychen5' // channel
+var spotifyApi = new SpotifyWebApi(credentials);
+var stateKey = 'spotify_auth_state';
+var accessToken = '';
+var refreshToken = '';
+
+// spotify credentials
+var credentials = {
+  clientId : '0a1ac6471975407ba1492994a094e157',
+  clientSecret : '03da7fe68a554b8e8e0ba67521962bb5',
+  redirectUri : 'http://localhost:5000/callback'
+};
+
+/**
+ * Generates a random string containing numbers and letters
+ * @param  {number} length The length of the string
+ * @return {string} The generated string
+ */
+var generateRandomString = function(length) {
+  var text = '';
+  var possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+
+  for (var i = 0; i < length; i++) {
+    text += possible.charAt(Math.floor(Math.random() * possible.length));
+  }
+  return text;
+};
+
+
+
+
+ app.use(express.static(__dirname + '/public'))
+    .use(cookieParser());
+
+
+// getting auth
+app.get('/login', function(req, res) {
+
+   var state = generateRandomString(16);
+   res.cookie(stateKey, state);
+
+  // your application requests authorization
+  var scope = 'user-read-private user-read-email';
+  res.redirect('https://accounts.spotify.com/authorize?' +
+    querystring.stringify({
+      response_type: 'code',
+      client_id: credentials['clientId'],
+      scope: scope,
+      redirect_uri: credentials['redirectUri'],
+      state: state
+    }));
+});
+
+
+
+// app requests refresh and access tokens
+// after checking the state parameter
+app.get('/callback', function(req, res) {
+
+  var code = req.query.code || null;
+  var state = req.query.state || null;
+  var storedState = req.cookies ? req.cookies[stateKey] : null;
+
+  if (state === null || state !== storedState) {
+    res.redirect('/#' +
+      querystring.stringify({
+        error: 'state_mismatch'
+      }));
+  } else {
+    res.clearCookie(stateKey);
+    var authOptions = {
+      url: 'https://accounts.spotify.com/api/token',
+      form: {
+        code: code,
+        redirect_uri: credentials['redirectUri'],
+        grant_type: 'authorization_code'
+      },
+      headers: {
+        'Authorization': 'Basic ' + (new Buffer(credentials['clientId'] + ':' + credentials['clientSecret']).toString('base64'))
+      },
+      json: true
+    };
+
+    request.post(authOptions, function(error, response, body) {
+      if (!error && response.statusCode === 200) {
+
+        var accessToken = body.access_token,
+            refreshToken = body.refresh_token;
+
+        var options = {
+          url: 'https://api.spotify.com/v1/me',
+          headers: { 'Authorization': 'Bearer ' + accessToken },
+          json: true
+        };
+
+        // use the access token to access the Spotify Web API
+        request.get(options, function(error, response, body) {
+          console.log(body);
+        });
+
+        // we can also pass the token to the browser to make requests from there
+        res.redirect('/#' +
+          querystring.stringify({
+            access_token: accessToken,
+            refresh_token: refreshToken
+          }));
+      } else {
+        res.redirect('/#' +
+          querystring.stringify({
+            error: 'invalid_token'
+          }));
+      }
+    });
+  }
+});
 
 // required optons for tmi bot
 var options = {
@@ -21,17 +144,26 @@ var options = {
 	channels: ["albychen5"]
 };
 
-// spotify credentials
-var credentials = {
-  clientId : 'e5be13d5c6b543bea64f7b54a509cbc3',
-  clientSecret : '68c1b24e910a444e989713f30a00da94',
-  redirectUri : 'http://localhost:5000/callback'
-};
+
+
+
+spotifyApi.setAccessToken(accessToken);
+console.log("setAccessToken function called\n");
+console.log("AccessToken is currently : " + accessToken +"\n");
+
+app.get('/start', function(req, res) {
+
+
+
+});
+
 
 // creating the spotify client
-var spotifyApi = new SpotifyWebApi(credentials);
-// super janky by copy pasting the spotify auth code from web-api-auth-examples
-spotifyApi.setAccessToken('BQDAo8xuPDBqUwGpC9EgatPiUDDBd-zn8eFWNYXHK5ogSiIcYofnpzZukVLoGVAhzL4rB3IYHozEEJyO44VfAiXaBaM-53mTtbqBVdmmFhTqYVDlvF66ubIfbMuUDjF8waH9UGCFuH_JWISHozX9auVP-VUEy9aOHnHTYCdZTXQ7_s4Enp7pKzTXhfJNIRNgkLw_3ryflxyi');
+// var spotifyApi = new SpotifyWebApi(credentials);
+// // super janky by copy pasting the spotify auth code from web-api-auth-examples
+// spotifyApi.setAccessToken(accessToken);
+// console.log("setAccessToken function called\n");
+// console.log("AccessToken is currently : " + accessToken +"\n");
 
 // not sure what code this is, something in the spotify-web-api-node example code
 // var code = 'MQCbtKe23z7YzzS44KzZzZgjQa621hgSzHN';
@@ -74,7 +206,7 @@ client.on('chat', function(channel, user, message, self) {
 	// expected structure is -add songUri
 	if(message.startsWith('-add '))
 	{
-
+		j// add a track to the Test Playlist
 		songUri = message.substring(5, message.length);
 		spotifyApi.addTracksToPlaylist(spotifyUser, spotifyPlaylist, [songUri])
 			.then(function(data) {
@@ -84,17 +216,6 @@ client.on('chat', function(channel, user, message, self) {
 				console.log('Something went wrong!', err);
 				client.action(channel, 'error occured, track not added');
 			});
-
-		// add a track to the Test Playlist
-
-		// spotifyApi.addTracksToPlaylist('albychen', '5s8NXNEjuuRWXf28GcLxmG', ["spotify:track:4ckuS4Nj4FZ7i3Def3Br8W"])
-		// .then(function(data) {
-		// 	console.log('Added tracks to playlist!');
-		// 	client.action(channel, 'added track to playlist');
-		// }, function(err) {
-		// 	console.log('Something went wrong!', err);
-		// 	client.action(channel, 'error occured, track not added');
-		// });
 	}
 });
 
