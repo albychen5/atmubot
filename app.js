@@ -1,4 +1,11 @@
+// Atmubot Node.js application
+// Creating a chatbot to take user spotify requests and putting it into a playlist
+
+// ========= some initial setup that's required =========
+//  required module for twitch chat
 var tmi = require('tmi.js');
+
+// required module so that we don't have to write HTTP requests when talking with spotify API (it's a wrapper)
 var SpotifyWebApi = require('spotify-web-api-node');
 var spotifyUser = '1238380192'; //spotify username
 var spotifyPlaylist = '01jHwHi5D6jxefCMP1q7uy';
@@ -144,6 +151,7 @@ var options = {
 	channels: ["albychen5"]
 };
 
+<<<<<<< HEAD
 
 
 
@@ -168,7 +176,7 @@ app.get('/start', function(req, res) {
 // not sure what code this is, something in the spotify-web-api-node example code
 // var code = 'MQCbtKe23z7YzzS44KzZzZgjQa621hgSzHN';
 
-// attempt at using the spotify-web-api-node authorizationCodeGrant to get the authorization code
+// Albert: attempt at using the spotify-web-api-node authorizationCodeGrant to get the authorization code
 // spotifyApi.authorizationCodeGrant(code)
 //   .then(function(data) {
 //     console.log('The token expires in ' + data.body['expires_in']);
@@ -182,17 +190,14 @@ app.get('/start', function(req, res) {
 //     console.log('Something went wrong!', err);
 //   });
 
-// creating the tmi client and connecting to the twitch channel
-var client = new tmi.client(options);
-client.connect();
-
+// ========= REAL code starts here =========
 // when someone sends a chat into the client
 client.on('chat', function(channel, user, message, self) {
 	if(self) return
 
 	// help command
 	if(message === "-help" || message === "-h") {
-		helpActions = "-add to add a song, -currentSong for the current song, -twitter for my twitter handle";
+		helpActions = "-add <songURI> to add a song, -twitter for my twitter handle";
 		client.action(channel, helpActions);
 	}
 
@@ -204,9 +209,9 @@ client.on('chat', function(channel, user, message, self) {
 
 	// if bot detects someone trying to add a song
 	// expected structure is -add songUri
+	// TODO (annie): some better command parsing, ensure that the format of the song URI is correct
 	if(message.startsWith('-add '))
 	{
-		j// add a track to the Test Playlist
 		songUri = message.substring(5, message.length);
 		spotifyApi.addTracksToPlaylist(spotifyUser, spotifyPlaylist, [songUri])
 			.then(function(data) {
@@ -217,6 +222,8 @@ client.on('chat', function(channel, user, message, self) {
 				client.action(channel, 'error occured, track not added');
 			});
 	}
+
+	// TODO (annie): add command to recommend some songs if user requests it
 });
 
 // when chat bot connects, show welcome message
@@ -224,8 +231,8 @@ client.on('connected', function(address,port) {
 	client.action(channel, "Welcome to Atmu! To see a list of commands, type '-help' ");
 });
 
-
 // when chat bot disconnects, show goodbye message
+// however, if you ^C the program from the terminal, this message will not show
 client.on('disconnected', function(reason) {
 	client.action(channel, "Goodbye.")
 });
